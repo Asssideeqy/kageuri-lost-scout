@@ -1,0 +1,212 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KAGEURI — THE LOST SCOUT</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#050806;color:#eef5ef;font-family:Arial,sans-serif}header{height:62px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;background:#0b100e;border-bottom:1px solid #29362f}.logo{font-weight:900;letter-spacing:.16em}.logo b{color:#d7ff28}.tag{font-size:10px;color:#829089;letter-spacing:.14em}.screen{display:none}.active{display:block}.intro{text-align:center;padding:55px 18px 25px;background:radial-gradient(circle at 50% 20%,#20372c,#070a08 65%)}.eyebrow{color:#d7ff28;font-weight:900;font-size:11px;letter-spacing:.2em}.intro h1{font-size:clamp(50px,9vw,110px);line-height:.82;letter-spacing:-.07em;margin:14px 0}.intro p{max-width:720px;margin:auto;color:#aebbb4;line-height:1.6}.chars{max-width:1100px;margin:0 auto;padding:15px 18px 25px;display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.char{background:#0c120f;border:1px solid #2c3932;border-radius:16px;overflow:hidden;cursor:pointer}.char.selected{border-color:#d7ff28;box-shadow:0 0 0 2px #d7ff2830}.char img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.ci{padding:11px}.cn{font-weight:900;letter-spacing:.08em}.cr{font-size:9px;color:#829089;margin-top:4px}.actions{text-align:center;padding:10px 10px 45px}.btn{border:0;background:#d7ff28;color:#071000;padding:14px 21px;border-radius:11px;font-weight:900;cursor:pointer}.btn.alt{background:#17201c;color:#eef5ef;border:1px solid #34423a;margin-left:7px}.game{background:#020403}.hud{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;padding:9px;background:#0a0f0d}.box{padding:7px 9px;border:1px solid #27342e;border-radius:9px;background:#111814}.lab{font-size:8px;color:#78877f;letter-spacing:.15em}.val{font-weight:900;font-size:17px;margin-top:2px}.bar{height:5px;background:#28332e;border-radius:8px;margin-top:5px}.bar i{display:block;height:100%;background:#d7ff28;width:100%}.stage{position:relative}.stage canvas{width:100%;height:auto;display:block}.overlay{display:none;position:absolute;inset:0;place-items:center;background:#020403dc}.overlay.show{display:grid}.modal{width:min(500px,92%);padding:27px;background:#0d1411;border:1px solid #3a4840;border-radius:19px;text-align:center}.modal h2{font-size:38px;margin:8px 0}.modal p{color:#9eaba4;line-height:1.6}.report{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.stat{background:#131b17;border:1px solid #29362f;border-radius:10px;padding:10px}.stat b{display:block;font-size:21px}.stat span{font-size:8px;color:#829089;letter-spacing:.12em}.controls{text-align:center;padding:11px;background:#0a0f0d}.ctrl{width:60px;height:46px;margin:3px;border-radius:10px;border:1px solid #34423a;background:#141b18;color:white;font-size:20px;font-weight:900}.tip{text-align:center;color:#6f7d76;font-size:10px;padding:0 10px 12px}footer{padding:14px 20px;border-top:1px solid #26332d;color:#65736c;font-size:9px;display:flex;justify-content:space-between}
+@media(max-width:800px){.chars{grid-template-columns:repeat(2,1fr)}.hud{grid-template-columns:repeat(3,1fr)}.hud .box:nth-child(4),.hud .box:nth-child(5){display:none}}@media(max-width:520px){header{padding:0 13px}.tag{display:none}.intro{padding-top:38px}.chars{padding:12px}.char .ci{padding:8px}.cn{font-size:12px}}
+</style></head><body>
+<header><div class="logo">KAGEURI <b>影売り</b></div><div class="tag">THE LOST SCOUT · FREE BUILD</div></header>
+
+<section id="select" class="screen active">
+<div class="intro"><div class="eyebrow">FIELD FILE 01 · THE WILD</div><h1>THE LOST<br>SCOUT</h1><p><b>The scout is missing.</b> Enter the forest, recover multiple scouts and relic shards, collect wild energy bonuses, survive the guardians and complete the timed phase.</p><div style="margin-top:26px;font-size:11px;letter-spacing:.18em;font-weight:900;color:#9aa69f">CHOOSE YOUR KAGEURI</div></div>
+<div id="chars" class="chars"></div>
+<div class="actions"><button id="start" class="btn">ENTER THE FOREST</button><button id="briefBtn" class="btn alt">MISSION BRIEF</button><p id="brief" style="display:none;max-width:650px;margin:18px auto;color:#87958d;font-size:12px;line-height:1.7">Every KAGEURI travels with a pet scout. This one vanished beyond the old forest. Find the relic trail, defeat the guardians and bring the scout home.</p></div>
+</section>
+
+<section id="game" class="screen">
+<div class="hud"><div class="box"><div class="lab">HP</div><div id="hp" class="val">100</div><div class="bar"><i id="hpbar"></i></div></div><div class="box"><div class="lab">RELICS</div><div id="rel" class="val">0 / 3</div></div><div class="box"><div class="lab">GUARDIANS</div><div id="foes" class="val">0</div></div><div class="box"><div class="lab">SCORE</div><div id="score" class="val">0</div></div><div class="box"><div class="lab">TIME</div><div id="time" class="val">0:00</div></div></div>
+<div class="stage"><canvas id="c" width="1280" height="720"></canvas><div id="over" class="overlay"><div class="modal"><div id="overEye" class="eyebrow">SCOUT REPORT</div><h2 id="overTitle">SCOUT FOUND</h2><p id="overMsg"></p><div class="report"><div class="stat"><b id="fs">0</b><span>SCORE</span></div><div class="stat"><b id="fr">0</b><span>RELICS</span></div><div class="stat"><b id="ft">0:00</b><span>TIME</span></div></div><button id="again" class="btn">RUN AGAIN</button><button id="back" class="btn alt">CHANGE KAGEURI</button></div></div></div>
+<div class="controls"><button id="up" class="ctrl">↑</button><button id="left" class="ctrl">←</button><button id="attack" class="ctrl">⚔</button><button id="right" class="ctrl">→</button><button id="down" class="ctrl">↓</button></div><div class="tip">WASD / ARROWS = MOVE · SPACE = ATTACK · SHIFT = DODGE · E = SEARCH SCOUT · COLLECT ✦ FOR BONUS</div></section>
+<footer><span><b>IN SHADOW WE TRADE.</b> Free community mini-game.</span><span>NO WALLET · NO LOGIN · NO SERVER</span></footer>
+
+<script>
+const C=[
+{name:"NX-01",role:"ORU-KETH",img:"assets/kageuri-01.jpg",spd:1,dmg:1},
+{name:"NX-02",role:"VESH-KA",img:"assets/kageuri-02.jpg",spd:1.08,dmg:.94},
+{name:"NX-03",role:"KETH-7",img:"assets/kageuri-03.jpg",spd:.94,dmg:1.14},
+{name:"NX-04",role:"ASH WALKER",img:"assets/kageuri-04.jpg",spd:1.02,dmg:1.03}];
+
+const ENV=[
+{name:"GREENFALL",type:"FOREST",top:"#17321f",bottom:"#07100a",ground:"#1d4225",accent:"#d7ff28"},
+{name:"VERDANT DEEP",type:"JUNGLE",top:"#082d2a",bottom:"#04100e",ground:"#145047",accent:"#55e6a5"},
+{name:"ASHEN RUN",type:"DESERT",top:"#59452d",bottom:"#1a1209",ground:"#8b6a3d",accent:"#ffd36a"},
+{name:"WHITE SILENCE",type:"ICE",top:"#304b5b",bottom:"#0b151d",ground:"#7999a6",accent:"#bcefff"},
+{name:"DEADLAND",type:"FINAL",top:"#30242d",bottom:"#09070b",ground:"#4c3941",accent:"#ff8c68"}
+];
+let choice=0,level=0,run=false,last=0,p,scouts=[],shards=[],foes=[],bombs=[],parts=[],time=0,score=0,spawn=0,relicSpawn=0,bombSpawn=0,totalScore=0,transitioning=false;
+const $=id=>document.getElementById(id);
+C.forEach((x,i)=>{let el=document.createElement("div");el.className="char"+(i?"":" selected");el.innerHTML=`<img src="${x.img}"><div class="ci"><div class="cn">${x.name}</div><div class="cr">${x.role}</div></div>`;el.onclick=()=>{choice=i;document.querySelectorAll(".char").forEach(e=>e.classList.remove("selected"));el.classList.add("selected")};$("chars").appendChild(el)});
+$("briefBtn").onclick=()=>{$("brief").style.display=$("brief").style.display==="none"?"block":"none"};
+const cv=$("c"),ctx=cv.getContext("2d"),W=cv.width,H=cv.height,imgs=C.map(x=>{let i=new Image;i.src=x.img;return i});
+const keys={};
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=1;if(e.key===" ")attack();if(e.key.toLowerCase()==="e")search()});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=0);
+function touch(id,key){$(id).onpointerdown=e=>{e.preventDefault();keys[key]=1};$(id).onpointerup=e=>{e.preventDefault();keys[key]=0};$(id).onpointercancel=()=>keys[key]=0}
+touch("up","arrowup");touch("down","arrowdown");touch("left","arrowleft");touch("right","arrowright");$("attack").onpointerdown=e=>{e.preventDefault();attack()};
+$("start").onclick=()=>{level=0;totalScore=0;transitioning=false;startLevel()};
+$("again").onclick=()=>{level=0;totalScore=0;transitioning=false;startLevel()};
+$("back").onclick=()=>{run=false;transitioning=true;$("game").classList.remove("active");$("select").classList.add("active");$("over").classList.remove("show")};
+
+function getStage(){
+ const env=ENV[level%ENV.length];
+ return {
+  ...env,
+  stage:level+1,
+  mins:1+level*.5,
+  scouts:3+Math.min(level,6),
+  maxFoes:7+level*3,
+  enemySize:25+Math.min(level,7)*2,
+  enemySpeed:52+level*10,
+  playerSpeed:1+level*.075,
+  bombRate:level<1?0:Math.max(.8,3.8-level*.16),
+  bombCount:level<1?0:Math.min(4,1+Math.floor(level/2))
+ };
+}
+function startLevel(){
+ const L=getStage(),ch=C[choice];
+ transitioning=false;$("select").classList.remove("active");$("game").classList.add("active");$("over").classList.remove("show");
+ p={x:W/2,y:H*.72,r:28,hp:100,spd:210*ch.spd*L.playerSpeed,dmg:21*ch.dmg,atk:0,inv:0};
+ scouts=[];shards=[];foes=[];bombs=[];parts=[];time=0;score=0;spawn=0;relicSpawn=0;bombSpawn=L.bombRate;
+ for(let i=0;i<L.scouts;i++)scouts.push({x:90+Math.random()*(W-180),y:130+Math.random()*(H-210),r:18,found:false,pulse:Math.random()*6});
+ for(let i=0;i<5+Math.min(level,5);i++)shards.push(makeRelic());
+ msg=`STAGE ${L.stage}: ${L.type} · RELICS + SCOUTS · NEW CHALLENGES AHEAD`;msgT=4;
+ $("hp").textContent=100;$("rel").textContent="0";$("foes").textContent=0;$("score").textContent=Math.floor(totalScore);$("time").textContent="0:00";
+ last=performance.now();run=true;requestAnimationFrame(loop);
+}
+let msg="",msgT=0;
+function d(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function makeRelic(){return {x:70+Math.random()*(W-140),y:115+Math.random()*(H-170),r:15,a:Math.random()*6}}
+function toast(t){msg=t;msgT=2.3}
+function spawnFoe(){
+ const s=Math.floor(Math.random()*4),x=s<2?(s?W+35:-35):Math.random()*W,y=s<2?100+Math.random()*(H-145):(s===2?-35:H+35);
+ const L=getStage(),r=L.enemySize+Math.random()*8;
+ foes.push({x,y,r,hp:35+level*9,spd:L.enemySpeed,hit:0})
+}
+function spawnBomb(){
+ const L=getStage();
+ bombs.push({x:80+Math.random()*(W-160),y:125+Math.random()*(H-185),r:16,t:2.7,flash:0});
+ toast("WARNING · HAZARD INCOMING");
+}
+function attack(){
+ if(!run||p.atk>0)return;
+ p.atk=.32;
+ for(let e of foes)if(d(p,e)<92){
+  e.hp-=p.dmg;
+  if(e.hp<=0){score+=180;for(let i=0;i<10;i++)part(e.x,e.y)}
+ }
+}
+function search(){
+ if(!run)return;
+ for(let s of scouts)if(!s.found&&d(p,s)<70){
+  s.found=true;score+=500;
+  toast(`SCOUT RECOVERED · ${scouts.filter(x=>x.found).length}/${scouts.length}`);
+  for(let i=0;i<15;i++)part(s.x,s.y);break;
+ }
+}
+function part(x,y){parts.push({x,y,vx:(Math.random()-.5)*150,vy:(Math.random()-.5)*150,l:.7})}
+function update(dt){
+ const L=getStage();
+ time+=dt;msgT=Math.max(0,msgT-dt);p.atk=Math.max(0,p.atk-dt);p.inv=Math.max(0,p.inv-dt);
+ let dx=(keys.arrowright||keys.d?1:0)-(keys.arrowleft||keys.a?1:0),dy=(keys.arrowdown||keys.s?1:0)-(keys.arrowup||keys.w?1:0),len=Math.hypot(dx,dy)||1;
+ let sp=p.spd*(keys.shift?.72:1);
+ p.x=Math.max(45,Math.min(W-45,p.x+dx/len*sp*dt));p.y=Math.max(95,Math.min(H-45,p.y+dy/len*sp*dt));
+ score+=dt*(9+level*4);spawn-=dt;
+ if(spawn<=0&&foes.length<L.maxFoes){spawn=Math.max(.28,1.45-level*.055-time*.009);spawnFoe()}
+ relicSpawn-=dt;
+ if(relicSpawn<=0&&shards.length<5+Math.min(level,5)){shards.push(makeRelic());relicSpawn=Math.max(.28,.55-level*.012)}
+ if(L.bombRate>0){
+  bombSpawn-=dt;
+  if(bombSpawn<=0&&bombs.length<L.bombCount){spawnBomb();bombSpawn=L.bombRate*(.72+Math.random()*.55)}
+ }
+ for(let i=shards.length-1;i>=0;i--){
+  let o=shards[i];o.a+=dt;
+  if(d(p,o)<p.r+o.r){shards.splice(i,1);score+=300;toast("RELIC RECOVERED · +300");for(let j=0;j<9;j++)part(o.x,o.y)}
+ }
+ for(let i=bombs.length-1;i>=0;i--){
+  let b=bombs[i];b.t-=dt;b.flash+=dt*10;
+  if(d(p,b)<p.r+b.r+5&&p.inv<=0){p.hp-=18+level*2;p.inv=.8;toast("HAZARD HIT · KEEP MOVING")}
+  if(b.t<=0){
+   if(d(p,b)<105&&p.inv<=0){p.hp-=24+level*2;p.inv=1;toast("HAZARD BLAST · MOVE AWAY")}
+   for(let j=0;j<12;j++)part(b.x,b.y);
+   bombs.splice(i,1);
+  }
+ }
+ for(let e of foes){
+  let dx=p.x-e.x,dy=p.y-e.y,len=Math.hypot(dx,dy)||1;e.x+=dx/len*e.spd*dt;e.y+=dy/len*e.spd*dt;e.hit=Math.max(0,e.hit-dt);
+  if(d(p,e)<p.r+e.r&&e.hit<=0){if(p.inv<=0){p.hp-=10+level*2;p.inv=.65}e.hit=.75}
+ }
+ for(let i=foes.length-1;i>=0;i--)if(foes[i].hp<=0)foes.splice(i,1);
+ for(let i=parts.length-1;i>=0;i--){let q=parts[i];q.x+=q.vx*dt;q.y+=q.vy*dt;q.l-=dt;if(q.l<=0)parts.splice(i,1)}
+ if(p.hp<=0)return finish(false);
+ if(time>=L.mins*60)finish(true);
+ hud();
+}
+function hud(){
+ const found=scouts.filter(x=>x.found).length;
+ $("hp").textContent=Math.max(0,Math.ceil(p.hp));$("hpbar").style.width=Math.max(0,p.hp)+"%";
+ $("rel").textContent=Math.floor(score/300);$("foes").textContent=foes.length;$("score").textContent=Math.floor(totalScore+score);
+ let sec=Math.floor(time);$("time").textContent=Math.floor(sec/60)+":"+String(sec%60).padStart(2,"0");
+}
+function finish(ok){
+ if(!run)return;
+ run=false;
+ const L=getStage();
+ totalScore+=Math.floor(score);
+ $("overEye").textContent=ok?"STAGE COMPLETE":"RUN ENDED";
+ $("overTitle").textContent=ok?"THE SCOUTS MOVE DEEPER":"THE WILD WON";
+ $("fs").textContent=Math.floor(totalScore);$("fr").textContent=scouts.filter(x=>x.found).length;$("ft").textContent=$("time").textContent;
+ if(ok){
+  $("overMsg").textContent=`Stage ${L.stage} cleared. The route shifts to ${ENV[(level+1)%ENV.length].type}, with faster enemies and new hazards.`;
+  $("again").textContent=`NEXT STAGE ${level+2}`;
+  $("again").onclick=()=>{if(!transitioning){transitioning=true;level++;startLevel()}};
+  if(!transitioning){transitioning=true;setTimeout(()=>{if($("game").classList.contains("active")){level++;startLevel()}},1400)}
+ }else{
+  $("overMsg").textContent="The run ended before you could clear this stage. Your score is saved for this run.";
+  $("again").textContent="RETRY STAGE";
+  $("again").onclick=()=>{transitioning=false;startLevel()};
+ }
+ $("over").classList.add("show");
+}
+function loop(now){if(!run)return;requestAnimationFrame(loop);let dt=Math.min(.04,(now-last)/1000);last=now;update(dt);draw()}
+function draw(){
+ const L=getStage();ctx.clearRect(0,0,W,H);
+ let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,L.top);g.addColorStop(1,L.bottom);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+ ctx.fillStyle=L.ground;
+ for(let i=0;i<80;i++){
+  let x=(i*163+Math.sin(i*2.3)*70)%W,y=95+(i*89)%(H-120),ss=12+(i%6)*7;
+  if(level%5===2){ctx.beginPath();ctx.arc(x,y,ss*1.5,0,7);ctx.fill();ctx.fillRect(x-3,y,ss/2,30)}
+  else if(level%5===3){ctx.beginPath();ctx.moveTo(x,y-ss);ctx.lineTo(x+ss,y+ss);ctx.lineTo(x-ss,y+ss);ctx.closePath();ctx.fill()}
+  else{ctx.beginPath();ctx.arc(x,y,ss,0,7);ctx.fill();ctx.fillRect(x-3,y,ss/3,32)}
+ }
+ ctx.strokeStyle=L.accent+"35";ctx.lineWidth=28;ctx.beginPath();ctx.moveTo(0,H*.65);ctx.quadraticCurveTo(W*.48,H*.48,W,H*.58);ctx.stroke();
+ for(let o of shards){
+  ctx.save();ctx.translate(o.x,o.y);ctx.rotate(o.a);ctx.shadowBlur=22;ctx.shadowColor="#ff3fd8";ctx.fillStyle="#ff3fd8";
+  ctx.beginPath();ctx.moveTo(0,-16);ctx.lineTo(12,0);ctx.lineTo(0,16);ctx.lineTo(-12,0);ctx.closePath();ctx.fill();
+  ctx.fillStyle="#fff3fc";ctx.beginPath();ctx.arc(0,0,4,0,7);ctx.fill();ctx.restore();
+ }
+ for(let b of bombs){
+  let urgent=b.t<1;
+  ctx.save();ctx.translate(b.x,b.y);ctx.shadowBlur=urgent?28:12;ctx.shadowColor=urgent?"#ff5b5b":"#ffb23e";
+  ctx.fillStyle=urgent?"#ff5b5b":"#25282a";ctx.beginPath();ctx.arc(0,0,b.r+Math.sin(b.flash)*2,0,7);ctx.fill();
+  ctx.strokeStyle=urgent?"#fff":"#ffb23e";ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,36+(2.7-b.t)*25,0,7);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font="bold 12px Arial";ctx.textAlign="center";ctx.fillText(Math.ceil(Math.max(0,b.t)),0,4);ctx.restore();
+ }
+ for(let s of scouts){
+  ctx.fillStyle=s.found?"#89958e55":L.accent+"55";ctx.beginPath();ctx.arc(s.x,s.y,35+Math.sin(s.pulse)*5,0,7);ctx.fill();
+  ctx.fillStyle=s.found?"#78827d":L.accent;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();
+  ctx.fillStyle="#09100b";ctx.beginPath();ctx.arc(s.x-6,s.y-3,3,0,7);ctx.arc(s.x+6,s.y-3,3,0,7);ctx.fill();s.pulse+=.04;
+ }
+ for(let e of foes){
+  ctx.fillStyle=level%5===2?"#514132":level%5===3?"#45575e":"#4d5150";ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,7);ctx.fill();
+  ctx.fillStyle=L.accent;ctx.beginPath();ctx.arc(e.x-6,e.y-3,3,0,7);ctx.arc(e.x+6,e.y-3,3,0,7);ctx.fill();
+ }
+ ctx.save();ctx.globalAlpha=p.inv>0&&Math.floor(p.inv*18)%2===0?.45:1;let rr=p.r+4;ctx.beginPath();ctx.arc(p.x,p.y,rr,0,7);ctx.clip();if(imgs[choice].complete)ctx.drawImage(imgs[choice],p.x-rr,p.y-rr,rr*2,rr*2);ctx.restore();
+ if(p.atk>0){ctx.strokeStyle=L.accent;ctx.lineWidth=7;ctx.beginPath();ctx.arc(p.x,p.y,82,-.9,.9);ctx.stroke()}
+ for(let q of parts){ctx.globalAlpha=q.l/.7;ctx.fillStyle=L.accent;ctx.fillRect(q.x,q.y,5,5)}ctx.globalAlpha=1;
+ ctx.fillStyle="#000a";ctx.fillRect(18,H-54,640,38);ctx.fillStyle="#fff";ctx.font="700 12px Arial";ctx.textAlign="left";
+ let found=scouts.filter(x=>x.found).length;
+ ctx.fillText(`STAGE ${L.stage} · ${L.type} · RELICS · SCOUTS ${found}/${scouts.length} · HAZARDS ${bombs.length}`,31,H-30);
+ ctx.textAlign="right";ctx.fillStyle=L.accent;ctx.fillText(`PACE ×${L.playerSpeed.toFixed(2)} · ENEMIES ${L.maxFoes}`,W-28,H-30);
+}
+draw();
+</script></body></html>
